@@ -7139,7 +7139,15 @@ void MainWindow::handle_transceiver_update (Transceiver::TransceiverState const&
       else
         ui->SWRlabel->setText("");
     }
-  }    
+  } 
+	 // High SWR protection: immediately halt transmission at SWR >= 2.50:1
+  constexpr unsigned int MAX_SAFE_SWR = 250;
+
+  if (s.ptt() && s.swr() >= MAX_SAFE_SWR &&
+      (m_transmitting || m_tune))
+  {
+    haltTx(QString("TX halted: high SWR %1:1")
+           .arg(s.swr() / 100.0, 0, 'f', 2));
   m_rigState = s;
   auto old_freqNominal = m_freqNominal;
   m_freqNominal = s.frequency ();
