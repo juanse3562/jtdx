@@ -7148,6 +7148,7 @@ void MainWindow::handle_transceiver_update (Transceiver::TransceiverState const&
   {
     haltTx(QString("TX halted: high SWR %1:1")
            .arg(s.swr() / 100.0, 0, 'f', 2));
+  }
   m_rigState = s;
   auto old_freqNominal = m_freqNominal;
   m_freqNominal = s.frequency ();
