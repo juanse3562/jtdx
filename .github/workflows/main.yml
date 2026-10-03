@@ -1,0 +1,80 @@
+name: JTDX SWR Protection - Build Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - SWR-protection
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout SWR-protection
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            gfortran \
+            git \
+            pkg-config \
+            autoconf \
+            automake \
+            libtool \
+            asciidoc \
+            libfftw3-dev \
+            libusb-1.0-0-dev \
+            libboost-all-dev \
+            qtbase5-dev \
+            qttools5-dev \
+            qttools5-dev-tools \
+            qtmultimedia5-dev \
+            libqt5serialport5-dev \
+            libqt5websockets5-dev
+
+      - name: Build JTDX Hamlib
+        shell: bash
+        run: |
+          mkdir -p "$HOME/hamlib-prefix"
+          git clone https://github.com/Hamlib/Hamlib.git "$HOME/hamlib-prefix/src"
+
+          cd "$HOME/hamlib-prefix/src"
+          ./bootstrap
+
+          mkdir -p "$HOME/hamlib-prefix/build"
+          cd "$HOME/hamlib-prefix/build"
+
+          ../src/configure \
+            --prefix="$HOME/hamlib-prefix" \
+            --disable-static \
+            --enable-shared \
+            --without-readline \
+            --without-indi \
+            --without-cxx-binding \
+            --disable-winradio
+
+          make -j2
+          make install
+
+      - name: Configure JTDX
+        shell: bash
+        run: |
+          mkdir -p build
+          cd build
+
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$HOME/hamlib-prefix" \
+            -DWSJT_GENERATE_DOCS=OFF \
+            ..
+
+      - name: Compile JTDX
+        shell: bash
+        run: |
+          cd build
+          cmake --build . --parallel 2
