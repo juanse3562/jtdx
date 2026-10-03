@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p "$HOME/hamlib-prefix"
-          git clone https://github.com/Hamlib/Hamlib.git "$HOME/hamlib-prefix/src"
+          git clone https://github.com/jtdx-project/jtdxhamlib.git "$HOME/hamlib-prefix/src"
 
           cd "$HOME/hamlib-prefix/src"
           ./bootstrap
